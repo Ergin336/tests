@@ -1,7 +1,7 @@
 import numpy as np
 import tensorflow as tf
 
-model = tf.keras.models.load_model('palwatch_modeldef.hdf5')
+model = tf.keras.models.load_model('palwatch_modeltest.hdf5')
 test_record = [[ 0.284,   0.0116, -0.2417,  0.0922, -0.1652,  0.5817, -0.1591,  0.0307, -0.3953,
    0.1577, -0.1516, -0.0041, -0.0519, -0.1229, -0.069,  -0.1249,  0.0731, -0.071,
   -0.0635, -0.1843,  0.0922, -0.0635,  0.1208, -0.0307,  0.002,  -0.3837, -0.0635,
