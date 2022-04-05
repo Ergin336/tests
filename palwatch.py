@@ -1,7 +1,7 @@
 import numpy as np
 import tensorflow as tf
 
-model = tf.keras.models.load_model('palwatch_modeltest.hdf5')
+model = tf.keras.models.load_model('palwatch_modelwatch.hdf5')
 """
 Sit test
 """
