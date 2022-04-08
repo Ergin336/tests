@@ -1,9 +1,10 @@
 from __future__ import division, print_function
-from webthing import (Action, Event, MultipleThings, Property, Thing,
+from webthing import (Action, Event, SingleThing, Property, Thing, Value,
                       WebThingServer)
 import logging
 import random
 import time
+import numpy as np
 import tornado.ioloop
 import uuid
 
@@ -23,7 +24,7 @@ class FadeAction(Action):
         self.thing.add_event(OverheatedEvent(self.thing, 102))
 
 
-class FakeGpioHumiditySensor(Thing):
+class PALWatchmodel(Thing):
     """
         PALWatch publishing the activity state of the user
     """
@@ -37,31 +38,28 @@ class FakeGpioHumiditySensor(Thing):
             'PALWatch en la red'
         )
 
-        self.level = "out_of_range"
+        self.level = Value(0.0)
         self.add_property(
             Property(self,
-                     'level',
+                    "fg",
                      self.level,
                      metadata={
                          '@type': 'ActivityProperty',
-                         'title': 'Activity',
+                         'title': 'Estado',
                          'type': 'string',
                          'description': 'La actividad actual del usuario',
-                         'sentado': 0,
-                         'de pie': 1,
-                         'caminando': 2,
                          'readOnly': True,
                      }))
 
         logging.debug('starting the sensor update looping task')
         self.timer = tornado.ioloop.PeriodicCallback(
             self.update_level,
-            1000
+            3000
         )
         self.timer.start()
 
     def update_level(self):
-        new_state = "sentado"
+        new_state = self.read_from_gpio()
         logging.debug('Estado actual de Ergin: %s', new_state)
         self.level.notify_of_external_update(new_state)
 
@@ -70,20 +68,24 @@ class FakeGpioHumiditySensor(Thing):
 
     @staticmethod
     def read_from_gpio():
-        """Mimic an actual sensor updating its reading every couple seconds.
-        """
-        return abs(70.0 * random.random() * (-0.5 + random.random()))
+        act = np.random.randint(3, size=1)
+        if act[0] == 0:
+            return "Sentado"
+        
+        elif act[0] == 1:
+            return "De pie"
+        
+        else:
+            return "Caminando"
 
 
 def run_server():
     # Create a thing that represents a humidity sensor
-    sensor = FakeGpioHumiditySensor()
+    sensor = PALWatchmodel()
 
     # If adding more than one thing, use MultipleThings() with a name.
     # In the single thing case, the thing's name will be broadcast.
-    server = WebThingServer(MultipleThings([sensor],
-                                           'PALWatch'),
-                            port=8888)
+    server = WebThingServer(SingleThing(sensor), port=8888)
     try:
         logging.info('starting the server')
         server.start()
